@@ -4,11 +4,10 @@
 # CARGO_REGISTRY_TOKEN secret，fork 不持有）。本仓库只需要：
 #   1. release PR（版本号 + CHANGELOG 自动维护）
 #   2. 合并后打 git tag + 创建 GitHub Release
-#   3. Mean Bean Deploy 构建各平台二进制上传到该 Release
-# 所以关闭 crates.io 发布（publish = false），保留 tag/release。
-[release]
+#   3. Mean Bean Deploy（tag 触发）构建各平台二进制上传到该 Release
+#
+# publish = false：跳过 cargo publish，但保留 git tag + GitHub Release
+# （见 https://release-plz.dev/docs/config：禁用后仍会继续创建 git tag）。
+[[package]]
+name = "tokei"
 publish = false
-
-[changelog]
-# CHANGELOG 由 release PR 维护，commit 信息已足够
-contributors = false
