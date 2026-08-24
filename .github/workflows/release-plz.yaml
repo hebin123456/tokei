@@ -25,4 +25,6 @@ jobs:
         uses: MarcoIeni/release-plz-action@v0.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          # crates.io 发布已在 release-plz.toml [release] publish=false 关闭：
+          # fork 无 CARGO_REGISTRY_TOKEN，发布链只做 tag + GitHub Release，
+          # 二进制产物由 mean_bean_deploy.yml（tag 触发）补齐。

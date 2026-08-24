@@ -1,9 +1,14 @@
+# 与 biturbo 同一发布哲学：master push 不构建，只有打了 v* tag 才构建产物。
+# 之前用 workflow_run（Release-plz 完成）触发有两个问题：
+#   1) Release-plz 失败/被跳过时 Deploy 仍可能被 CI 成功链带起，用 master HEAD
+#      构建出错误的 release；
+#   2) workflow_run 事件里 github.ref 是 refs/heads/master，tag_name 会被写成
+#      分支名而不是版本号。
+# tag 触发后 github.ref_name 恒为 vX.Y.Z，产物和 tag 一一对应。
 on:
-  workflow_run:
-    workflows: ["Release-plz"]
-    branches: [master]
-    types: 
-      - completed
+  push:
+    tags:
+      - 'v*'
 
 name: Mean Bean Deploy
 env:
@@ -59,8 +64,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
           # Draft should **always** be false. GitHub doesn't provide a way to
           # get draft releases from its API, so there's no point using it.
           draft: false
@@ -105,8 +110,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
           draft: false
           prerelease: true
       - uses: actions/upload-release-asset@v1
@@ -198,8 +203,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
           draft: false
           prerelease: false
       - name: Upload Release Asset
