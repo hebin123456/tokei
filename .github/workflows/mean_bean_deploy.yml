@@ -143,29 +143,33 @@ jobs:
           - armv7-unknown-linux-gnueabihf
           - i686-unknown-linux-gnu
           - i686-unknown-linux-musl
-          - mips-unknown-linux-gnu
-          - mips64-unknown-linux-gnuabi64
-          - mips64el-unknown-linux-gnuabi64
-          - mipsel-unknown-linux-gnu
+          # mips/mipsel/mips64/mips64el：rustup 已无预编译 std（tier-3 降级），
+          # v14.0.1 实测 "no prebuilt artifacts available"，移出矩阵。
+          # - mips-unknown-linux-gnu
+          # - mips64-unknown-linux-gnuabi64
+          # - mips64el-unknown-linux-gnuabi64
+          # - mipsel-unknown-linux-gnu
           - powerpc64-unknown-linux-gnu
           - powerpc64le-unknown-linux-gnu
           - s390x-unknown-linux-gnu
           - x86_64-unknown-linux-gnu
           - x86_64-unknown-linux-musl
-          # Android
-          - aarch64-linux-android
+          # Android：aarch64/i686/x86_64 在 v14.0.1 实测 NDK 链接失败
+          # （cannot find -lunwind 等，cross 镜像工具链腐坏）；arm/armv7 仍正常。
+          # - aarch64-linux-android
           - arm-linux-androideabi
           - armv7-linux-androideabi
-          - i686-linux-android
-          - x86_64-linux-android
+          # - i686-linux-android
+          # - x86_64-linux-android
           # *BSD
           # The FreeBSD targets can have issues linking so they are disabled
           # by default.
           # - i686-unknown-freebsd
           # - x86_64-unknown-freebsd
-          - x86_64-unknown-netbsd
-          # Solaris
-          - sparcv9-sun-solaris
+          # netbsd：v14.0.1 实测 cross 镜像链接失败，移出矩阵
+          # - x86_64-unknown-netbsd
+          # Solaris：sparcv9 实测 cross 镜像链接失败，移出矩阵
+          # - sparcv9-sun-solaris
           # Bare Metal
           # These are no-std embedded targets, so they will only build if your
           # crate is `no_std` compatible.
