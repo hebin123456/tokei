@@ -1,9 +1,9 @@
 VERSION 0.6
-FROM alpine:3.19
+FROM alpine:3.22
 WORKDIR /src
 
 build:
-    FROM rust:alpine3.19
+    FROM rust:alpine3.22
     RUN apk update \
         && apk add \
             git \
