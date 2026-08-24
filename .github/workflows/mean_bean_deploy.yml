@@ -14,8 +14,10 @@ jobs:
   # redownloaded across all of the jobs. Currently this copied pasted between
   # `ci.yml` and `deploy.yml`. Make sure to update both places when making
   # changes.
+  # 锁定 ubuntu-22.04（glibc 2.35）：runner 版本不影响容器内构建的产物，
+  # 但锁定可保证构建环境可复现，与 linux job 基线一致。
   install-cross:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: XAMPPRocky/get-github-release@v1
         id: cross
@@ -118,7 +120,11 @@ jobs:
           asset_content_type: application/gzip
 
   linux:
-    runs-on: ubuntu-latest
+    # 锁定 ubuntu-22.04（glibc 2.35）：Linux 产物在 cross 容器内构建，产物 glibc
+    # 基线由容器镜像决定；但若某 target 回退为宿主 cargo 构建（或 cross 镜像升级），
+    # ubuntu-latest（24.04, glibc 2.39）将直接污染产物——biturbo v1.1.1 即因此踩坑
+    # （version `GLIBC_2.39' not found）。基线锁死 + 下方守护步骤双保险。
+    runs-on: ubuntu-22.04
     needs: install-cross
     strategy:
       fail-fast: false
@@ -172,6 +178,20 @@ jobs:
 
       - run: ci/set_rust_version.bash stable ${{ matrix.target }}
       - run: ci/build.bash /tmp/cross ${{ matrix.target }} RELEASE
+      # 守护步骤：gnu 系动态链接产物最高 GLIBC 符号版本不得超过 2.35
+      # （Ubuntu 22.04 基线）。musl/android 为静态链接，无 glibc 依赖，跳过。
+      - name: Verify glibc baseline (gnu targets, must be <= 2.35)
+        if: contains(matrix.target, '-gnu')
+        run: |
+          set -e
+          BIN="target/${{ matrix.target }}/release/${{ env.BIN }}"
+          MAX=$(objdump -T "$BIN" | grep -oE 'GLIBC_2\.[0-9]+' | sort -uV | tail -1 | cut -d. -f2)
+          echo "[${{ matrix.target }}] Highest glibc symbol version required: 2.${MAX:-0}"
+          if [ -n "$MAX" ] && [ "$MAX" -gt 35 ]; then
+            echo "::error::${{ env.BIN }} (${{ matrix.target }}) requires glibc 2.$MAX > 2.35 (Ubuntu 22.04 baseline)."
+            exit 1
+          fi
+          echo "glibc baseline OK (<= 2.35)"
       - run: tar -czvf ${{ env.BIN }}.tar.gz --directory=target/${{ matrix.target }}/release ${{ env.BIN }}
       - uses: XAMPPRocky/create-release@v1.0.2
         id: create_release
