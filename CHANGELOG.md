@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [14.0.2](https://github.com/hebin123456/tokei/compare/v14.0.1...v14.0.2) - 2026-11-07
+
+### Other
+
+- 新增 Windows ARM64（`aarch64-pc-windows-msvc`）构建与发布目标，在原生
+  `windows-11-arm` runner 上编译并跑测试，产物 `tokei-aarch64-pc-windows-msvc.exe`
+
 ## [14.0.1](https://github.com/hebin123456/tokei/compare/v14.0.0...v14.0.1) - 2026-08-24
 
 ### Other
