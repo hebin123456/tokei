@@ -40,14 +40,22 @@ jobs:
         platform: [linux-musl, apple-darwin]
 
   windows:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     needs: install-cross
     strategy:
+      # ARM64 腿独立成 job：单腿失败不阻断 x64 产物发布。
+      fail-fast: false
       matrix:
-        target:
+        include:
           # MSVC
-          - i686-pc-windows-msvc
-          - x86_64-pc-windows-msvc
+          - target: i686-pc-windows-msvc
+            os: windows-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+          # Windows ARM64：GitHub 原生 ARM64 runner（公开仓库免费），原生编译
+          # 不做交叉；产物名 tokei-aarch64-pc-windows-msvc.exe，与其余 target 同规则。
+          - target: aarch64-pc-windows-msvc
+            os: windows-11-arm
           # GNU
           # - i686-pc-windows-gnu
           # - x86_64-pc-windows-gnu

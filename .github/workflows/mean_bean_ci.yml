@@ -30,7 +30,8 @@ jobs:
         platform: [linux-musl, apple-darwin]
 
   windows:
-    runs-on: windows-latest
+    # ARM64 target 走 GitHub 原生 Windows ARM64 runner（公开仓库免费），其余走 x64。
+    runs-on: ${{ matrix.target == 'aarch64-pc-windows-msvc' && 'windows-11-arm' || 'windows-latest' }}
     # Windows technically doesn't need this, but if we don't block windows on it
     # some of the windows jobs could fill up the concurrent job queue before
     # one of the install-cross jobs has started, so this makes sure all
@@ -53,6 +54,8 @@ jobs:
           # MSVC
           - i686-pc-windows-msvc
           - x86_64-pc-windows-msvc
+          # Windows ARM64：原生 runner 上原生编译并跑测试。
+          - aarch64-pc-windows-msvc
           # GNU: You typically only need to test Windows GNU if you're
           # specifically targeting it, and it can cause issues with some
           # dependencies if you're not so it's disabled by self.
